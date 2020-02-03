@@ -110,61 +110,6 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | id | 만들어진 목표 고유 id(String) |
 
-#### `GET` /goal/all
-- 모든 목표를 가져옵니다.
-
-#### Response
-| key | value |
-|-----|-----|
-| success | 성공 여부(Boolean) |
-| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 목표 데이터들(Array) |
-
-#### `GET` /goal/:id
-- 목표를 가져옵니다.
-
-#### Params
-| key | value |
-|-----|-----|
-| id | 가져올 목표의 id |
-
-#### Response
-| key | value |
-|-----|-----|
-| success | 성공 여부(Boolean) |
-| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 목표 데이터 |
-
-#### `GET` /goal/children/:id
-- id 목표의 자식 목표를 모두 가져옵니다.
-
-#### Params
-| key | value |
-|-----|-----|
-| id | 가져올 자식 목표의 부모 id |
-
-#### Response
-| key | value |
-|-----|-----|
-| success | 성공 여부(Boolean) |
-| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 자식 목표들(Array) |
-
-#### `GET` /goal/parent/:id
-- id 목표의 부모 목표를 가져옵니다.
-
-#### Params
-| key | value |
-|-----|-----|
-| id | 가져올 부모 목표의 자식 id |
-
-#### Response
-| key | value |
-|-----|-----|
-| success | 성공 여부(Boolean) |
-| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 부모 목표 |
-
 #### `PUT` /goal/:id
 - 기존 목표를 수정합니다.
 
@@ -214,6 +159,61 @@
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+
+#### `GET` /goal/all
+- 저장되어있는 모든 원본 목표를 가져옵니다.
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 목표 데이터(Array) |
+
+#### `GET` /goal/:id
+- id를 가진 원본 목표 데이터를 가져옵니다.
+
+#### Params
+| key | value |
+|-----|-----|
+| id | 원본 목표 id |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 목표 데이터 |
+
+#### `GET` /goal/children/:id
+- 자식 원본 목표를 모두 가져옵니다.
+
+#### Params
+| key | value |
+|-----|-----|
+| id | 부모 원본 목표 id |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 자식 원본 목표 데이터(Array) |
+
+#### `GET` /goal/parent/:id
+- 부모 원본 목표를 가져옵니다.
+
+#### Params
+| key | value |
+|-----|-----|
+| id | 자식 원본 목표 id |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 부모 목표 데이터 |
 
 ### HaveGoal (fork)
 - 만든 목표를 복제(Clone, 인스턴스화, Fork) 하기 위한 API
