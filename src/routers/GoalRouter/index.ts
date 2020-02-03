@@ -1,144 +1,121 @@
 import express from 'express';
-import { logger } from '../../index';
+import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
 
 const router = express.Router();
 
 router.post('/create', (req, res) => {
-	const { contents, level, parent } = req.body;
+    const {contents, level, parent} = req.body;
 
-	if (contents === undefined || level === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (contents === undefined || level === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	const levelNumber = parseInt(level);
-	if (levelNumber < 0 || levelNumber > 5) {
-		res.status(200).send({ success: false, code: 203 });
-		return;
-	}
+    const levelNumber = parseInt(level);
+    if (levelNumber < 0 || levelNumber > 5) {
+        res.status(200).send({success: false, code: 203});
+        return;
+    }
 
-	const obj = {
-		contents,
-		level,
-		parent
-	};
+    const obj = {
+        contents,
+        level,
+        parent
+    };
 
-	Goals.create(obj)
-		.then((data: any) => {
-			logger.info(`새로운 목표를 추가하였습니다. id: ${data._id}`);
-			res.status(200).send({ success: true, code: 0, id: data._id });
-		})
-		.catch((err: Error) => {
-			logger.error(`목표 추가 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+    Goals.create(obj)
+        .then((data: any) => {
+            logger.info(`새로운 목표를 추가하였습니다. id: ${data._id}`);
+            res.status(200).send({success: true, code: 0, id: data._id});
+        })
+        .catch((err: Error) => {
+            logger.error(`목표 추가 중 오류가 발생하였습니다. \n${err}`);
+            res.sendStatus(500);
+        });
 });
 
 router.put('/:id', (req, res) => {
-	const { id } = req.params;
-	const { contents, level, parent } = req.body;
+    const {id} = req.params;
+    const {contents, level, parent} = req.body;
 
-	if (id === undefined || contents === undefined || level === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (id === undefined || contents === undefined || level === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	const levelNumber = parseInt(level);
-	if (levelNumber < 0 || levelNumber > 5) {
-		res.status(200).send({ success: false, code: 203, id: null });
-		return;
-	}
+    const levelNumber = parseInt(level);
+    if (levelNumber < 0 || levelNumber > 5) {
+        res.status(200).send({success: false, code: 203, id: null});
+        return;
+    }
 
-	const obj: any = {
-		contents,
-		level
-	};
+    const obj: any = {
+        contents,
+        level
+    };
 
-	if (parent !== undefined) obj['parent'] = parent;
+    if (parent !== undefined) obj['parent'] = parent;
 
-	Goals.updateOne({ _id: id }, obj)
-		.then(() => {
-			logger.info(`${id} 원본 목표를 수정하였습니다.`);
-			res.status(200).send({ success: true, code: 0 });
-		})
-		.catch((err: Error) => {
-			logger.error(`${id} 원본 목표 수정 중 오류가 발생하였습니다.\n${err}`);
-			res.sendStatus(500);
-		});
+    Goals.updateOne({_id: id}, obj)
+        .then(() => {
+            logger.info(`${id} 원본 목표를 수정하였습니다.`);
+            res.status(200).send({success: true, code: 0});
+        })
+        .catch((err: Error) => {
+            logger.error(`${id} 원본 목표 수정 중 오류가 발생하였습니다.\n${err}`);
+            res.sendStatus(500);
+        });
 });
 
-router.delete('/all/:id', (req, res) => {
-	const { id } = req.params;
+router.delete('/all/:id', async (req, res) => {
+    const {id} = req.params;
 
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (id === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	Goals.find({ parent: id })
-		.then((data: any) => {
-			data.forEach((eachData: any) => {
-				Goals.deleteOne({ _id: eachData._id })
-					.then(() => {})
-					.catch((err: Error) => {
-						logger.error(`자식 목표 삭제 중 오류가 발생하였습니다. \n${err}`);
-					});
-			});
+    try {
+        const children = await Goals.find({parent: id});
 
-			setTimeout(() => {
-				Goals.deleteOne({ _id: id })
-					.then(() => {
-						HaveGoals.deleteOne({ target: id })
-							.then(() => {
-								logger.info(`목표와 목표 자식을 삭제하였습니다. id: ${id}`);
-								res.status(200).send({ success: true, code: 0 });	
-							});
-					})
-					.catch((err: Error) => {
-						logger.error(`목표 삭제 중 오류가 발생하였습니다. \n${err}`);
-						res.sendStatus(500);
-						return;
-					});			
-			}, 300);
-		})
-		.catch((err: Error) => {
-			logger.error(`자식 목표들을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+        for (const child of children) {
+            await Goals.deleteOne({_id: child});
+        }
+        await Goals.deleteOne({_id: id});
+
+        logger.info(`${id}와 그 자식 원본 목표를 모두 삭제하였습니다.`);
+        res.status(200).send({success: true, code: 0});
+    } catch (e) {
+        logger.error(`${id}와 그 자식 원본 목표를 삭제 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
-router.delete('/:id', (req, res) => {
-	const { id } = req.params;
+router.delete('/:id', async (req, res) => {
+    const {id} = req.params;
 
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (id === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	Goals.find({ parent: id })
-		.then((data: any) => {
-			if (data.length > 0) {
-				res.status(200).send({ success: true, code: 204 });
-				return;
-			}
+    try {
+        const children = await Goals.find({parent: id});
 
-			Goals.deleteOne({ _id: id })
-				.then(() => {
-					HaveGoals.deleteOne({ target: id }).then(() => {
-						logger.info(`목표를 삭제하였습니다. id: ${id}`);
-						res.status(200).send({ success: true, code: 0 });
-					});
-				})
-				.catch((err: Error) => {
-					logger.error(`목표 삭제 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		})
-		.catch((err: Error) => {
-			logger.error(`자식 목표들을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+        if (children.length > 0) {
+            res.status(200).send({success: true, code: 204});
+            return;
+        }
+
+        await Goals.deleteOne({_id: id});
+
+        logger.info(`${id} 원본 목표를 삭제하였습니다.`);
+        res.status(200).send({success: true, code: 0});
+    } catch (e) {
+        logger.error(`${id} 원본 목표를 삭제하는 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
 export default router;
