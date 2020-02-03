@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { usersSchema } from "../users";
 
-export const goalsSchema = new mongoose.Schema({
+export const goalsSchema: mongoose.Schema = new mongoose.Schema({
 	contents: {
 		type: String,
 		required: 'contents is required'
@@ -12,6 +13,9 @@ export const goalsSchema = new mongoose.Schema({
 	parent: {
 		type: String,
 		default: null
+	},
+	members: {
+		type: [usersSchema]
 	}
 });
 
