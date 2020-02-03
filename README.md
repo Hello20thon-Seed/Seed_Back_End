@@ -310,33 +310,33 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 유저 데이터(Array) |
 
-#### `GET` /fork/people/:id
-- 해당 id를 가진 복제 목표에 초대된 사람을 가져옵니다.
+#### `GET` /member/:id
+- 초대된 유저 목록을 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 가져올 복제 목표 id |
+| id | 원본 목표 id |
 
 #### Response
 | key | value |
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 유저 데이터들(Array) |
+| data | 유저 데이터(Array) |
 
-#### `PUT` /fork/people/:id
-- 해당 id를 가진 복제 목표에 사람을 추가합니다.
+#### `PUT` /member/:id
+- 유저를 초대 합니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 초대할 복제 목표 ID  |
+| id | 원본 목표 id  |
 
 #### Body
 | key | value |
 |-----|-----|
-| email | 초대할 사람의 이메일  |
+| email | 유저 이메일 |
 
 #### Response
 | key | value |
@@ -344,18 +344,18 @@
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
-#### `DELETE` /fork/people/:id
-- 해당 id를 가진 복제 목표에 사람을 제거합니다.
+#### `DELETE` /member/:id
+- 유저를 초대 삭제(?) 취소(?) 합니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 제거할 복제 목표 ID  |
+| id | 원본 목표 id  |
 
 #### Body
 | key | value |
 |-----|-----|
-| email | 제거할 사람의 이메일  |
+| email | 유저 이메일 |
 
 #### Response
 | key | value |

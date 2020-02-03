@@ -11,9 +11,8 @@ import AuthRouter from './routers/AuthRouter';
 import GoalRouter from './routers/GoalRouter';
 import GoalGetterRouter from './routers/GoalGetterRouter';
 import ForkRouter from './routers/ForkRouter';
-import DoneRouter from './routers/DoneRouter';
+import MemberRouter from './routers/MemberRouter';
 import databases from './databases';
-import Users from './databases/models/users';
 
 export const app = express();
 export const logger = log4js.getLogger();
@@ -53,7 +52,7 @@ app.use('/auth', AuthRouter);
 app.use('/goal', GoalRouter);
 app.use('/goal', GoalGetterRouter);
 app.use('/fork', ForkRouter);
-app.use('/done', DoneRouter);
+app.use('/member', MemberRouter);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => logger.info(`backend server listening on ${port}`));
