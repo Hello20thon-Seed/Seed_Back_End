@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
-import {usersSchema} from "../users";
+import {usersSchema, UsersStruct} from "../users";
+
+export interface ForksStruct extends mongoose.Document {
+    readonly originId: string;
+    readonly contents: string;
+    readonly level: number;
+    readonly parent: string;
+    readonly isDone: boolean;
+    readonly owner: UsersStruct;
+}
 
 export const forksSchema: mongoose.Schema = new mongoose.Schema({
     originId: {
@@ -27,6 +36,6 @@ export const forksSchema: mongoose.Schema = new mongoose.Schema({
     }
 });
 
-const forksModel = mongoose.model('forks', forksSchema);
+const forksModel = mongoose.model<ForksStruct>('forks', forksSchema);
 
 export default forksModel;

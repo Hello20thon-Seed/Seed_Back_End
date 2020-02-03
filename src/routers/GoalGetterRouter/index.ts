@@ -64,7 +64,7 @@ router.get('/parent/:id', async (req, res) => {
 	}
 
 	try {
-		const child: any = await Goals.findOne({ _id: id });
+		const child = await Goals.findOne({ _id: id });
 		const parentId = child!.parent;
 		const parent = await Goals.findOne({ _id: parentId });
 

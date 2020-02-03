@@ -1,5 +1,12 @@
 import mongoose from 'mongoose';
-import {usersSchema} from "../users";
+import {usersSchema, UsersStruct} from "../users";
+
+export interface GoalsStruct extends mongoose.Document {
+	readonly contents: string;
+	readonly level: number;
+	readonly parent: string;
+	readonly members: Array<UsersStruct>;
+}
 
 export const goalsSchema: mongoose.Schema = new mongoose.Schema({
     contents: {
@@ -19,6 +26,6 @@ export const goalsSchema: mongoose.Schema = new mongoose.Schema({
     }
 });
 
-const goalsModel = mongoose.model('goals', goalsSchema);
+const goalsModel = mongoose.model<GoalsStruct>('goals', goalsSchema);
 
 export default goalsModel;
