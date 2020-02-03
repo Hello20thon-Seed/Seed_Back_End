@@ -14,14 +14,13 @@ router.get('/all', async (req, res) => {
 		logger.error(`모든 원본 목표들을 가져오는 중 오류가 발생하였습니다. \n${e}`);
 		res.sendStatus(500);
 	}
-
 });
 
 router.get('/:id', async (req, res) => {
 	const { id } = req.params;
 
 	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
@@ -40,7 +39,7 @@ router.get('/children/:id', async (req, res) => {
 	const { id } = req.params;
 
 	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
@@ -59,7 +58,7 @@ router.get('/parent/:id', async (req, res) => {
 	const { id } = req.params;
 
 	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, id: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
