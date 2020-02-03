@@ -52,7 +52,7 @@ router.get('/all/:owner', async (req, res) => {
 
 	try {
 		const userData = await Users.findOne({ email: owner });
-		const forkGoals = await Forks.find({ owner: userData });
+		const forkGoals = await Forks.find({ owner: userData, level: 0 });
 
 		logger.info(`${owner}의 모든 복제 목표를 가져옵니다.`);
 		res.status(200).send({ success: true, code: 0, data: forkGoals });
