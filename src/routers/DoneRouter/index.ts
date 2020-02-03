@@ -1,165 +1,127 @@
 import express from 'express';
-import { logger } from '../../index';
-import DoneGoals from '../../databases/models/donegoals';
-import Goals from '../../databases/models/goals';
+import {logger} from '../../index';
+import Forks, {ForksStruct} from '../../databases/models/forks';
+import Users from '../../databases/models/users';
 
 const router = express.Router();
 
-const doneGoal = (res: Express.Response | any, email: string, forkId: string, targetId: string) => {
-	DoneGoals.create({ email, forkId, targetId })
-		.then(() => {
-			logger.info(`${email} 님이 목표를 달성했습니다. forkId: ${forkId}, targetId: ${targetId}`);
-			res.status(200).send({ success: true, code: 0 });
-		})
-		.catch((err: Error) => {
-			logger.error(`목표 완료 설정 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
-};
+router.put('/:forkId/:originId', async (req, res) => {
+    const {forkId, originId} = req.params;
+    const {email} = req.body;
 
-router.put('/:forkId/:targetId', (req, res, next) => {
-	const { forkId, targetId } = req.params;
-	const { email } = req.body;
+    if (forkId === undefined || originId === undefined || email === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	if (forkId === undefined || targetId === undefined || email === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    try {
+        let flag = false;
+        const children = await Forks.find({parent: originId});
+        children.forEach((child: ForksStruct) => {
+            if (!child.isDone) {
+                flag = true;
+                res.status(200).send({success: false, code: 502});
+                return;
+            }
+        });
 
-	DoneGoals.findOne({ email, targetId })
-		.then((findTarget: any) => {
-			if (findTarget) {
-				res.status(200).send({ success: false, code: 501 });
-				return;
-			}
+        if (flag) return;
 
-			Goals.find({ parent: targetId })
-				.then((data: any) => {
-					let flag = false;
-					if (data.length > 0) {
-						data.forEach((eachData: any) => {
-							DoneGoals.findOne({ email, targetId: eachData._id })
-								.then((i: any) => {
-									if (!flag && !i) {
-										flag = true;
-										res.status(200).send({ success: false, code: 502 });
-									}
-								})
-								.catch((err: Error) => {
-									logger.error(`완료 목표 자식 검사 중 오류가 발생하였습니다. \n${err}`);
-									res.sendStatus(500);
-								});
-						});
-						
-						setTimeout(() => {
-							if(!flag) {
-								doneGoal(res, email, forkId, targetId);
-							}
-						}, 300);
-					} else {
-						doneGoal(res, email, forkId, targetId);
-					}
-				})
-				.catch((err: Error) => {
-					logger.error(`완료 목표의 자식들을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		})
-		.catch((err: Error) => {
-			logger.error(`완료 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+        await Forks.updateOne({_id: forkId}, {isDone: true});
+
+        logger.info(`${email}가 ${forkId} 복제 목표를 달성했습니다.`);
+        res.status(200).send({success: true, code: 0});
+    } catch (e) {
+        logger.error(`${email}가 ${forkId} 복제 목표를 달성 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
-router.delete('/:forkId/:targetId', (req, res) => {
-	const { forkId, targetId } = req.params;
-	const { email } = req.body;
+router.delete('/:forkId/:targetId', async (req, res) => {
+    const {forkId, originId} = req.params;
+    const {email} = req.body;
 
-	if (forkId === undefined || targetId === undefined || email === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (forkId === undefined || originId === undefined || email === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	DoneGoals.deleteOne({ email, forkId, targetId })
-		.then(() => {
-			logger.info(`${email} 님의 목표를 달성 해제했습니다. forkId: ${forkId}, targetId: ${targetId}`);
-			res.status(200).send({ success: true, code: 0 });
-		})
-		.catch((err: Error) => {
-			logger.error(`목표 완료 설정 해제 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+    try {
+        let flag = false;
+        const children = await Forks.find({parent: originId});
+        children.forEach((child: ForksStruct) => {
+            if (child.isDone) {
+                flag = true;
+                res.status(200).send({success: false, code: 503});
+                return;
+            }
+        });
+
+        if (flag) return;
+
+        await Forks.updateOne({_id: forkId}, {isDone: false});
+
+        logger.info(`${email}가 ${forkId} 복제 목표를 달성 해제했습니다.`);
+        res.status(200).send({success: true, code: 0});
+    } catch (e) {
+        logger.error(`${email}가 ${forkId} 복제 목표를 달성 해제 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
 router.get('/user/:email', async (req, res) => {
-	const { email } = req.params;
+    const {email} = req.params;
 
-	if (email === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
+    if (email === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	DoneGoals.find({ email })
-		.then((data: any) => {
-			logger.info(`${email} 님의 달성 목표를 가져옵니다.`);
-			res.status(200).send({ success: true, code: 0, data });
-		})
-		.catch((err: Error) => {
-			logger.error(`달성 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+    try {
+        const userData = await Users.findOne({email});
+        const data = await Forks.find({owner: userData});
+
+        logger.info(`${email}의 달성한 복제 목표를 가져옵니다.`);
+        res.status(200).send({success: true, code: 0, data});
+    } catch (e) {
+        logger.error(`${email}의 달성한 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
-router.get('/:forkId/:targetId/:email', (req, res) => {
-	const { forkId, targetId, email } = req.params;
+router.get('/:forkId/:originId/:email', async (req, res) => {
+    const {forkId, originId, email} = req.params;
 
-	if (forkId === undefined || targetId === undefined || email === undefined) {
-		res.status(200).send({ success: false, code: 101, count: 0, node: 0 });
-		return;
-	}
+    if (forkId === undefined || originId === undefined || email === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
 
-	let count = 0;
-	let node = 0;
-	let finded = false;
+    let count = 0;
+    let node = 0;
 
-	DoneGoals.find({ email, forkId }).then(findDoneGoal => {
-		if(findDoneGoal.length === 0) {
-			res.status(200).send({ success: true, code: 0, count: 0, node: 0 });
-			return;
-		}
-		
-		Goals.findOne({ _id: targetId }).then((data: any) => {
-			if (data) count++;
-			node++;
+    try {
+        const rootGoal = await Forks.findOne({_id: forkId, originId});
+        const isRootGoalDone = rootGoal!.isDone;
 
-			Goals.find({ parent: targetId })
-				.then((data: any) => {
-					data.forEach((eachItem: any) => {
-						DoneGoals.findOne({ email, targetId: eachItem._id }).then(findDoneGoal => {
-							if (findDoneGoal) {
-								finded = true;
-								count++;
-							}
-						});
-						node++;
-					});
+        node++;
+        if (isRootGoalDone) count++;
 
-					setTimeout(() => {
-						if (finded) {
-							count--;
-							node--;
-						}
+        const rootChildren = await Forks.find({parent: originId});
+        rootChildren.forEach((child: ForksStruct) => {
+            node++;
+            if (child.isDone) count++;
+        });
 
-						logger.info(`${email} 님의 달성 정보를 가져옵니다.`);
-						res.status(200).send({ success: true, code: 0, count, node });
-					}, 300);
-				})
-				.catch((err: Error) => {
-					logger.error(`달성 정보를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		});
-	});
+        let data = (count / node);
+        if (count === 0 && node === 0) data = 0;
+
+        logger.info(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져옵니다.`);
+        res.status(200).send({success: true, code: 0, data});
+    } catch (e) {
+        logger.info(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져오는 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
 export default router;

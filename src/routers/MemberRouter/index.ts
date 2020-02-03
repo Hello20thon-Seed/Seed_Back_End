@@ -37,6 +37,12 @@ router.put('/:id', async (req, res) => {
         const userData = await Users.findOne({ email });
         const goal = await Goals.findOne({ _id: id });
         const prevMembers = goal!.members;
+
+        if(prevMembers.includes(userData!)) {
+            res.status(200).send({success: false, code: 402});
+            return;
+        }
+
         prevMembers.push(userData!);
 
         await Goals.updateOne({ _id: id }, { members: prevMembers });

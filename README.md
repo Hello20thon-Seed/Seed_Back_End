@@ -364,22 +364,22 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
 ### Done
-- 복제 목표 완료에 관한 API
-- targetId는 복제된 목표 ID가 아닌 틀 목표 ID입니다.
+- 복제 목표를 달성하는 API
 
-#### `PUT` /done/:forkId/:targetId
-- 해당 유저를 완료(달성) 설정합니다.
+#### `PUT` /done/:forkId/:originId
+- 복제 목표를 달성합니다.
+- 자식 노드가 달성되있지 않으면 오류를 반환합니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| forkId | 완료 설정 할 복제 목표 id  |
-| targetId | 완료 설정 할 세부 목표 ID (대주제, 중주제, 소주제 목표 등)  |
+| forkId | 복제 목표 id |
+| originId | 원본 목표 id (자식 목표 달성 검사하기 위해 필요) |
 
 #### Body
 | key | value |
 |-----|-----|
-| email | 완료 설정 할 유저 이메일  |
+| email | 유저 이메일  |
 
 #### Response
 | key | value |
@@ -388,18 +388,17 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
 #### `DELETE` /done/:forkId/:targetId
-- 해당 유저를 완료(달성) 설정 해제합니다.
+- 복제 목표를 달성 해제합니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| forkId | 완료 설정 해제 할 복제 목표 id  |
-| targetId | 완료 설정 해제 할 세부 목표 ID (대주제, 중주제, 소주제 목표 등)  |
+| forkId | 복제 목표 id  |
 
 #### Body
 | key | value |
 |-----|-----|
-| email | 완료 설정 해제 할 유저 이메일  |
+| email | 유저 이메일  |
 
 #### Response
 | key | value |
@@ -408,38 +407,36 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
 #### `GET` /done/user/:email
-- 해당 유저가 완료 한 모든 복제 목표 id와 세부 목표 id를 가져옵니다.
+- 달성 한 모든 복제 목표를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| email | 유저 email  |
+| email | 유저 이메일 |
 
 #### Response
 | key | value |
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 데이터 (Array) |
+| data | 복제 목표 데이터 (Array) |
 
-#### `GET` /done/:forkId/:targetId/:email
-- targetId 기준으로 자식까지 달성한 유저 수를 가져옵니다.
-- count, node를 이용하여 달성률을 구할 수 있습니다.
+#### `GET` /done/:forkId/:originId/:email
+- originId 원본 목표부터 자식까지 달성한 정보를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| forkId | 가져올 복제 목표 id  |
-| targetId | 가져올 세부 목표 id  |
-| email | 가져올 유저 이메일 |
+| forkId | 복제 목표 id  |
+| originId | 원본 목표 id  |
+| email | 유저 이메일 |
 
 #### Response
 | key | value |
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| count | 해당 유저가 달성한 목표 수 |
-| node | targetId부터 자식 노드까지의 개수 |
+| data | 달성 데이터 (백분율 아님) |
 
 ## Error Code
 #### 0
@@ -467,10 +464,6 @@
 #### 301
 - 사용자가 존재하지 않습니다.
 
-#### 401
-- 해당 사용자가 이미 같은 목표를 복제한 상태입니다.
-- 기존 목표를 삭제하고 다시 생성 할 수 있습니다.
-
 #### 402
 - 해당 유저가 이미 초대되어있습니다.
 
@@ -480,6 +473,9 @@
 #### 502
 - 자식 노드가 달성 되어있지 않습니다.
 - 자식 노드가 모두 달성되어야합니다.
+
+### 503
+- 자식 노드가 달성 해제 되어 있지 않습니다.
 
 ## MongoDB
 - Host
