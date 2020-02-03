@@ -19,7 +19,7 @@ router.post('/create', async (req, res) => {
 		const originGoal = await Goals.findOne({ _id: id });
 		const { contents, level, parent } = originGoal!;
 		const createData = {
-			origin: id,
+			originId: id,
 			contents,
 			level,
 			parent,
