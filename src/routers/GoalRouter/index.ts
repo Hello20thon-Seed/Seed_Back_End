@@ -59,11 +59,11 @@ router.put('/:id', (req, res) => {
 
 	Goals.updateOne({ _id: id }, obj)
 		.then(() => {
-			logger.info(`목표를 수정하였습니다. id: ${id}`);
+			logger.info(`${id} 원본 목표를 수정하였습니다.`);
 			res.status(200).send({ success: true, code: 0 });
 		})
 		.catch((err: Error) => {
-			logger.error(`목표 수정 중 오류가 발생하였습니다. id: ${id} \n${err}`);
+			logger.error(`${id} 원본 목표 수정 중 오류가 발생하였습니다.\n${err}`);
 			res.sendStatus(500);
 		});
 });
