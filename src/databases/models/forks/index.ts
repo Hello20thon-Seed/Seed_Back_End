@@ -32,7 +32,8 @@ export const forksSchema: mongoose.Schema = new mongoose.Schema({
         default: false
     },
     owner: {
-        type: [usersSchema]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users'
     }
 });
 
