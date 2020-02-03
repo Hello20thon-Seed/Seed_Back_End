@@ -21,11 +21,12 @@
 | \_id | 식별용 ID |
 | email | 유저 이메일 |
 | nickname | 유저 별명 |
-| profile | 유저 프로필 이미지 CDN 링크 |
+| profile | 유저 프로필 사진 링크 |
+| goal | 유저가 포크한 대주제 목표들 (Array<Fork>) |
 | \_\_v | MongoDB 버전관리용 (무시해도됨) |
 
 ### Goal
-- 목표 데이터
+- 원본 목표 데이터
 
 | key | value |
 |-----|-----|
@@ -33,29 +34,21 @@
 | contents | 목표 내용 |
 | level | 목표 종류(대주제, 중주제, 소주제) |
 | parent | 부모 목표 ID (없다면 null) |
+| members | 공유하는 사람들 (Array<User>) |
 | \_\_v | MongoDB 버전관리용 (무시해도됨) |
 
-### ForkGoal (테이블 이름: havegoal)
+### Fork
 - 복제 목표 데이터
 
 | key | value |
 |-----|-----|
 | \_id | 식별용 ID |
-| target | 복제 대상 목표 ID |
-| owner | 복제 목표 만든 사람 |
-| goal | 원본 목표 (위 Goal 데이터로 들어갑니다.) |
-| people | 목표에 초대된 사람 (위 User 데이터가 배열로 들어갑니다.) |
-| \_\_v | MongoDB 버전관리용 (무시해도됨) |
-
-### DoneGoal
-- 목표 완료 데이터
-
-| key | value |
-|-----|-----|
-| \_id | 식별용 ID |
-| email | 완료한 사람 이메일 |
-| forkId | 완료한 복제 목표 ID |
-| targetId | 완료한 세부 원본 목표 ID |
+| originId | 원본 목표 id |
+| contents | 목표 내용 |
+| level | 목표 종류(대주제, 중주제, 소주제) |
+| parent | 부모 목표 ID (없다면 null) |
+| isDone | 완료 여부 |
+| owner | 만든 사람 정보 (User) |
 | \_\_v | MongoDB 버전관리용 (무시해도됨) |
 
 ## REST API
@@ -91,7 +84,6 @@
 
 
 ### Goal (목표)
-- **프론트엔드에 로그인 구현되면 로그인 한 사람만 작동하도록 바꿈**
 
 #### `POST` /goal/create
 - 새로운 목표를 만듭니다.
