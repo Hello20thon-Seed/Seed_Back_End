@@ -1,8 +1,8 @@
 import express from 'express';
 import { logger } from '../../index';
-import HaveGoals from '../../databases/models/havegoals';
+import Forks, {ForksStruct} from '../../databases/models/forks';
 import Goals from '../../databases/models/goals';
-import Users from '../../databases/models/users';
+import Users, {UsersStruct} from '../../databases/models/users';
 
 const router = express.Router();
 
@@ -10,87 +10,77 @@ router.post('/create', async (req, res) => {
 	const { id, owner } = req.body;
 
 	if (id === undefined || owner === undefined) {
-		res.status(200).send({ success: false, code: 101, id: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
-	const obj: any = {
-		target: id,
-		owner,
-		goal: await Goals.findOne({ _id: id })
-	};
+	try {
+		const ownerData = await Users.findOne({ email: owner });
+		const originGoal = await Goals.findOne({ _id: id });
+		const { contents, level, parent } = originGoal!;
+		const createData = {
+			origin: id,
+			contents,
+			level,
+			parent,
+			isDone: false,
+			owner: ownerData
+		};
 
-	Users.findOne({ email: owner })
-		.then((data: any) => {
-			obj['people'] = [data];
+		const forkGoal = await Forks.create(createData);
 
-			HaveGoals.findOne({ owner })
-				.then((data: any) => {
-					if (data && data.target === id) {
-						res.status(200).send({ success: false, code: 401, id: null });
-						return;
-					}
+		const prevUserGoal: Array<ForksStruct> = ownerData!.goal;
+		prevUserGoal.push(forkGoal);
 
-					HaveGoals.create(obj)
-						.then((data: any) => {
-							logger.info(`${owner} 님이 ${id} 목표를 복제하였습니다. fork id: ${data._id}`);
-							res.status(200).send({ success: true, code: 0, id: data._id });
-						})
-						.catch((err: Error) => {
-							logger.error(`목표 복제 중 오류가 발생하였습니다. \n${err}`);
-							res.sendStatus(500);
-						});
-				})
-				.catch((err: Error) => {
-					logger.error(`목표 복제 확인 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		})
-		.catch((err: Error) => {
-			logger.error(`목표 복제 주인을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+		await Users.updateOne({ email: owner }, { goal: prevUserGoal });
+
+		logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제하였습니다.`);
+		res.status(200).send({ success: true, code: 0, id: forkGoal._id });
+	} catch (e) {
+		logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
+	}
 });
 
 router.get('/all/:owner', async (req, res) => {
 	const { owner } = req.params;
 
 	if (owner === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
-	HaveGoals.find({ owner })
-		.then((data: any) => {
-			logger.info(`${owner} 님의 모든 복제 목표를 가져옵니다.`);
-			res.status(200).send({ success: true, code: 0, data });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+	try {
+		const userData = await Users.findOne({ email: owner });
+		const forkGoals = await Forks.find({ owner: userData });
+
+		logger.info(`${owner}의 모든 복제 목표를 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: forkGoals });
+	} catch (e) {
+		logger.error(`${owner}의 모든 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
+	}
 });
 
 router.get('/:id', async (req, res) => {
 	const { id } = req.params;
 
 	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
-	HaveGoals.findOne({ _id: id })
-		.then((data: any) => {
-			logger.info(`복제 목표를 가져옵니다. id: ${id}`);
-			res.status(200).send({ success: true, code: 0, data });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
+	try {
+		const forkGoal = await Forks.findOne({ _id: id });
+		logger.info(`${id} 복제 목표를 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: forkGoal });
+	} catch (e) {
+		logger.info(`${id} 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
+	}
 });
 
-router.get('/with/:id/:email', async (req, res) => {
+router.get('/filter/:id/:email', async (req, res) => {
 	const { id, email } = req.params;
 
 	if (id === undefined || email == undefined) {
@@ -98,34 +88,16 @@ router.get('/with/:id/:email', async (req, res) => {
 		return;
 	}
 
-	HaveGoals.findOne({ target: id, owner: email })
-		.then((data: any) => {
-			logger.info(`복제 목표를 가져옵니다. id: ${id}`);
-			res.status(200).send({ success: true, code: 0, data });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
-});
+	try {
+		const userData = await Users.findOne({ email });
+		const filteringForkGoal = await Forks.findOne({ originId: id, owner: userData });
 
-router.delete('/:id', async (req, res) => {
-	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
-		return;
+		logger.info(`${email}, ${id}를 가진 복제 목표를 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: filteringForkGoal });
+	} catch (e) {
+		logger.error(`${email}, ${id}를 가진 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
 	}
-
-	HaveGoals.deleteOne({ _id: id })
-		.then(() => {
-			logger.info(`복제 목표를 삭제하였습니다. id: ${id}`);
-			res.status(200).send({ success: true, code: 0 });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표 삭제 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
 });
 
 router.get('/user/:id', async (req, res) => {
@@ -136,135 +108,38 @@ router.get('/user/:id', async (req, res) => {
 		return;
 	}
 
-	HaveGoals.find({ target: id })
-		.then((data: any) => {
-			const arr: Array<string> = [];
-			data.forEach((eachItem: any) => {
-				arr.push(eachItem.owner);
-			});
-			logger.info(`목표를 복제한 유저 email을 가져옵니다. id: ${id}`);
-			res.status(200).send({ success: true, code: 0, data: arr });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
+	try {
+		const forkList = await Forks.find({ originId: id });
+		const doForkUsers: Array<UsersStruct> = [];
+
+		forkList.forEach((fork: ForksStruct) => {
+			doForkUsers.push(fork.owner);
 		});
+
+		logger.info(`${id} 원본 목표를 복제한 모든 유저를 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: doForkUsers });
+	} catch (e) {
+		logger.error(`${id} 원본 목표를 복제한 모든 유저를 가져오는 중 오류가 발생하였습니다.`);
+		res.sendStatus(500);
+	}
 });
 
-router.get('/people/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
 	const { id } = req.params;
 
 	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
+		res.status(200).send({ success: false, code: 101, data: null });
 		return;
 	}
 
-	HaveGoals.findOne({ _id: id })
-		.then((data: any) => {
-			logger.info(`복제 목표에 초대된 사람들을 가져왔습니다. id: ${id}`);
-			res.status(200).send({ success: true, code: 0, data: data.people });
-		})
-		.catch((err: Error) => {
-			logger.error(`복제 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
-});
-
-router.put('/people/:id', async (req, res) => {
-	const { id } = req.params;
-	const { email } = req.body;
-
-	if (id === undefined || email === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
+	try {
+		await Forks.deleteOne({ _id: id });
+		logger.info(`${id} 복제 목표를 삭제하였습니다.`);
+		res.status(200).send({ success: true, code: 0 });
+	} catch (e) {
+		logger.error(`${id} 복제 목표를 삭제 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
 	}
-
-	HaveGoals.findOne({ _id: id })
-		.then((prevGoal: any) => {
-			Users.findOne({ email })
-				.then((findUserData: any) => {
-					if (!findUserData) {
-						res.status(200).send({ success: false, code: 301 });
-						return;
-					}
-
-					const cond = prevGoal.people.find(
-						(item: any) => JSON.stringify(item) === JSON.stringify(findUserData)
-					);
-
-					if (cond) {
-						res.status(200).send({ success: false, code: 402 });
-						return;
-					}
-
-					const tempPeople = prevGoal.people;
-					tempPeople.push(findUserData);
-
-					HaveGoals.updateOne({ _id: id }, { people: tempPeople })
-						.then(() => {
-							logger.info(`복제 목표에 ${email} 유저를 초대하였습니다. id: ${id}`);
-							res.status(200).send({ success: true, code: 0 });
-						})
-						.catch((err: Error) => {
-							logger.error(`유저 초대 중 오류가 발생하였습니다. id: ${id} \n${err}`);
-							res.sendStatus(500);
-						});
-				})
-				.catch((err: Error) => {
-					logger.error(`초대할 대상을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		})
-		.catch((err: Error) => {
-			logger.error(`초대할 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
-});
-
-router.delete('/people/:id', async (req, res) => {
-	const { id } = req.params;
-	const { email } = req.body;
-
-	if (id === undefined || email === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
-
-	HaveGoals.findOne({ _id: id })
-		.then((prevGoal: any) => {
-			Users.findOne({ email })
-				.then((findUserData: any) => {
-					const tempPeople = prevGoal.people;
-					const deleteIndex = tempPeople.findIndex(
-						(item: object) => JSON.stringify(item) === JSON.stringify(findUserData)
-					);
-					logger.debug(deleteIndex);
-					if (deleteIndex === -1) {
-						res.status(200).send({ success: false, code: 301 });
-						return;
-					}
-
-					tempPeople.splice(deleteIndex, 1);
-
-					HaveGoals.updateOne({ _id: id }, { people: tempPeople })
-						.then(() => {
-							logger.info(`복제 목표에 ${email} 유저를 초대 삭제하였습니다. id: ${id}`);
-							res.status(200).send({ success: true, code: 0 });
-						})
-						.catch((err: Error) => {
-							logger.error(`유저 초대 삭제 중 오류가 발생하였습니다. id: ${id} \n${err}`);
-							res.sendStatus(500);
-						});
-				})
-				.catch((err: Error) => {
-					logger.error(`초대 삭제할 대상을 가져오는 중 오류가 발생하였습니다. \n${err}`);
-					res.sendStatus(500);
-				});
-		})
-		.catch((err: Error) => {
-			logger.error(`초대 삭제할 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${err}`);
-			res.sendStatus(500);
-		});
 });
 
 export default router;

@@ -215,18 +215,18 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 부모 목표 데이터 |
 
-### HaveGoal (fork)
-- 만든 목표를 복제(Clone, 인스턴스화, Fork) 하기 위한 API
+### Fork Goal
+- 원본 목표를 복제 하기 위한 API
 
 #### `POST` /fork/create
 - 목표를 복제합니다.
-- 복제는 대주제 목표만 가능합니다.
+- 복제 시 달성 여부는 `false`로 설정됩니다.
 
 #### Body
 | key | value |
 |-----|-----|
-| id | 복제할 대주제 목표의 고유 id |
-| owner | 복제할 대상의 주인 email |
+| id | 원본 목표 id |
+| owner | 복제할 대상 이메일 |
 
 #### Response
 | key | value |
@@ -236,27 +236,27 @@
 | id | 복제 목표의 id |
 
 #### `GET` /fork/all/:owner
-- 해당 email 유저가 가지고 있는 모든 복제 목표를 가지고 옵니다.
+- 해당 유저의 모든 복제 목표를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| owner | 복제 목표를 가져올 대상의 이메일 |
+| owner | 유저 이메일 |
 
 #### Response
 | key | value |
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 복제 목표들(Array) |
+| data | 복제 목표 데이터(Array) |
 
 #### `GET` /fork/:id
-- 해당 id의 복제 목표를 가져옵니다.
+- 복제 목표를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 복제할 대주제 목표의 고유 id |
+| id | 복제 목표 id |
 
 #### Response
 | key | value |
@@ -265,14 +265,14 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 복제 목표 데이터 |
 
-#### `GET` /fork/with/:id/:email
-- 해당 id의 복제 목표를 가져옵니다.
+#### `GET` /fork/filter/:id/:email
+- 조건에 맞는 원본 복제 목표를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 원본 id |
-| email | 이메일 |
+| id | 원본 복제 목표 id |
+| email | 복제 목표 주인 이메일 |
 
 #### Response
 | key | value |
@@ -282,12 +282,12 @@
 | data | 복제 목표 데이터 |
 
 #### `DELETE` /fork/:id
-- 해당 id의 복제 목표를 삭제합니다.
+- 복제 목표를 삭제합니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 복제할 대주제 목표의 고유 id |
+| id | 복제 목표 id |
 
 #### Response
 | key | value |
@@ -296,19 +296,19 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
 #### `GET` /fork/user/:id
-- 해당 원본 목표를 복제한 모든 유저를 가지고 옵니다.
+- 원본 목표를 복제한 모든 유저 정보를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
-| id | 가져올 원본 목표 id |
+| id | 원본 목표 id |
 
 #### Response
 | key | value |
 |-----|-----|
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
-| data | 유저 이메일들(Array) |
+| data | 유저 데이터(Array) |
 
 #### `GET` /fork/people/:id
 - 해당 id를 가진 복제 목표에 초대된 사람을 가져옵니다.
