@@ -1,16 +1,23 @@
 # Seed-backend
 
-## Get Started
+## 시작하기
 
-### Build & Run
+### Command Line 이용하기
+#### Build & Run
 `npm run start`
 
-### Development Mode
+#### Development Mode
 `npm run dev`
 
+### 구름 IDE 이용하기
+#### Build & Run
+`프로젝트 -> 공통, 빌드 또는 실행` 메뉴
 
-### with Goorm IDE
-`프로젝트 -> 공통 또는 빌드 또는 실행` 메뉴
+#### Build
+`프로젝트 -> 빌드` 메뉴
+
+#### Run
+`프로젝트 -> 실행` 메뉴
 
 ## Payload
 ### User
