@@ -1,7 +1,6 @@
 import express from 'express';
 import { logger } from '../../index';
 import Goals from '../../databases/models/goals';
-import HaveGoals from '../../databases/models/havegoals';
 
 const router = express.Router();
 
@@ -9,13 +8,13 @@ router.post('/create', (req, res) => {
 	const { contents, level, parent } = req.body;
 
 	if (contents === undefined || level === undefined) {
-		res.status(200).send({ success: false, code: 101, id: null });
+		res.status(200).send({ success: false, code: 101 });
 		return;
 	}
 
 	const levelNumber = parseInt(level);
 	if (levelNumber < 0 || levelNumber > 5) {
-		res.status(200).send({ success: false, code: 203, id: null });
+		res.status(200).send({ success: false, code: 203 });
 		return;
 	}
 
