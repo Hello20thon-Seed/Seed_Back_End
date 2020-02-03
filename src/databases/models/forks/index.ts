@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { usersSchema } from "../users";
+import {usersSchema} from "../users";
 
 export const forksSchema: mongoose.Schema = new mongoose.Schema({
     originId: {
