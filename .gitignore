@@ -7,3 +7,5 @@
 .env
 
 /src/config.ts
+
+.idea/
