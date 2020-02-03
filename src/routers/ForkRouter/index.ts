@@ -37,7 +37,7 @@ router.post('/create', async (req, res) => {
 		logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제하였습니다.`);
 		res.status(200).send({ success: true, code: 0, id: forkGoal._id });
 	} catch (e) {
-		logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제 중 오류가 발생하였습니다. \n${e}`);
+		logger.error(`${owner}를 주인으로 ${id} 원본 목표를 복제 중 오류가 발생하였습니다. \n${e}`);
 		res.sendStatus(500);
 	}
 });
@@ -75,7 +75,7 @@ router.get('/:id', async (req, res) => {
 		logger.info(`${id} 복제 목표를 가져옵니다.`);
 		res.status(200).send({ success: true, code: 0, data: forkGoal });
 	} catch (e) {
-		logger.info(`${id} 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
+		logger.error(`${id} 복제 목표를 가져오는 중 오류가 발생하였습니다. \n${e}`);
 		res.sendStatus(500);
 	}
 });

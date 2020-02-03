@@ -119,7 +119,7 @@ router.get('/:forkId/:originId/:email', async (req, res) => {
         logger.info(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져옵니다.`);
         res.status(200).send({success: true, code: 0, data});
     } catch (e) {
-        logger.info(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져오는 중 오류가 발생하였습니다. \n${e}`);
+        logger.error(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져오는 중 오류가 발생하였습니다. \n${e}`);
         res.sendStatus(500);
     }
 });
