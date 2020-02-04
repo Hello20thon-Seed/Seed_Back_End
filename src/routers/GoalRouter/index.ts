@@ -1,14 +1,13 @@
 import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
-import Users from '../../databases/models/users';
 import checkBody from "../../middlewares/CheckBody";
 import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
 router.post('/create', checkBody, async (req, res) => {
-    const {contents, level, parent, email} = req.body;
+    const {contents, level, parent} = req.body;
 
     const levelNumber = parseInt(level);
     if (levelNumber < 0 || levelNumber > 5) {
@@ -17,16 +16,13 @@ router.post('/create', checkBody, async (req, res) => {
     }
 
     try {
-        const userData = await Users.findOne({ email });
         const obj = {
             contents,
             level,
-            parent,
-            members: [userData]
+            parent
         };
 
         const created = await Goals.create(obj);
-
 
         logger.info(`새로운 목표를 추가하였습니다. id: ${created._id}`);
         res.status(200).send({success: true, code: 0, id: created._id});

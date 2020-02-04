@@ -14,8 +14,21 @@ const pushForkGoaltoUser = async (forkGoal: ForksStruct, owner: string, ownerDat
     await Users.updateOne({email: owner}, {goal: prevUserGoal});
 };
 
+const addMembertoOriginGoal = async (id: string, userData: UsersStruct) => {
+	const goalData = await Goals.findOne({ _id: id });
+	const prevMembers: Array<UsersStruct> = goalData!.members;
+	prevMembers.push(userData);
+
+	await Goals.updateOne({ _id: id }, { members: prevMembers });
+};
+
 router.post('/create', checkBody, async (req, res) => {
     const {id, owner} = req.body;
+
+    if(!req.isAuthenticated()) {
+		res.sendStatus(401);
+    	return;
+	}
 
     try {
         const ownerData = await Users.findOne({email: owner});
@@ -27,7 +40,7 @@ router.post('/create', checkBody, async (req, res) => {
             return;
         }
 
-        const {contents, level, parent} = originGoal!;
+        const {contents, level} = originGoal!;
         const createRootData = {
             originId: id,
             contents,
@@ -39,6 +52,7 @@ router.post('/create', checkBody, async (req, res) => {
 
         const forkGoal = await Forks.create(createRootData);
         await pushForkGoaltoUser(forkGoal, owner, ownerData!); // 유저 데이터에 포크 정보 넣는건 대주제만 넣음
+		await addMembertoOriginGoal(id, ownerData!);
 
         let prevForkGoalId = forkGoal._id;
         for (const originChild of originChildren) {
@@ -52,9 +66,12 @@ router.post('/create', checkBody, async (req, res) => {
             };
 
             const childForkGoal = await Forks.create(createChildData);
+			await addMembertoOriginGoal(originChild._id, ownerData!);
 
             prevForkGoalId = childForkGoal._id;
         }
+
+
 
         logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제하였습니다.`);
         res.status(200).send({success: true, code: 0, id: forkGoal._id});
