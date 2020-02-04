@@ -1,12 +1,18 @@
 import express from 'express';
 import { logger } from '../../index';
 import Forks, {ForksStruct} from '../../databases/models/forks';
-import Goals from '../../databases/models/goals';
+import Goals, {GoalsStruct} from '../../databases/models/goals';
 import Users, {UsersStruct} from '../../databases/models/users';
 import checkBody from "../../middlewares/CheckBody";
 import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
+
+const pushForkGoaltoUser = async (forkGoal: ForksStruct, owner: string, ownerData: UsersStruct) => {
+	const prevUserGoal: Array<ForksStruct> = ownerData!.goal;
+	prevUserGoal.push(forkGoal);
+	await Users.updateOne({ email: owner }, { goal: prevUserGoal });
+};
 
 router.post('/create', checkBody, async (req, res) => {
 	const { id, owner } = req.body;
@@ -14,29 +20,41 @@ router.post('/create', checkBody, async (req, res) => {
 	try {
 		const ownerData = await Users.findOne({ email: owner });
 		const originGoal = await Goals.findOne({ _id: id });
+		const originChildren = await Goals.find({ parent: id });
 
 		if(originGoal!.level !== 0) {
 			res.status(200).send({ success: false, code: 205 });
 			return;
 		}
 
-		const originChildren = await Goals.find({ parent: id });
 		const { contents, level, parent } = originGoal!;
-		const createData = {
+		const createRootData = {
 			originId: id,
 			contents,
 			level,
-			parent,
+			parent: null,
 			isDone: false,
-			owner: ownerData
+			owner: ownerData!
 		};
 
-		const forkGoal = await Forks.create(createData);
+		const forkGoal = await Forks.create(createRootData);
+		await pushForkGoaltoUser(forkGoal, owner, ownerData!); // 유저 데이터에 포크 정보 넣는건 대주제만 넣음
 
-		const prevUserGoal: Array<ForksStruct> = ownerData!.goal;
-		prevUserGoal.push(forkGoal);
+		let prevForkGoalId = forkGoal._id;
+		for (const originChild of originChildren) {
+			const createChildData = {
+				originId: originChild._id,
+				contents: originChild.contents,
+				level: originChild.level,
+				parent: prevForkGoalId,
+				isDone: false,
+				ownerData: ownerData!
+			};
 
-		await Users.updateOne({ email: owner }, { goal: prevUserGoal });
+			const childForkGoal = await Forks.create(createChildData);
+
+			prevForkGoalId = childForkGoal._id;
+		}
 
 		logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제하였습니다.`);
 		res.status(200).send({ success: true, code: 0, id: forkGoal._id });
