@@ -12,6 +12,7 @@ import GoalRouter from './routers/GoalRouter';
 import GoalGetterRouter from './routers/GoalGetterRouter';
 import ForkRouter from './routers/ForkRouter';
 import MemberRouter from './routers/MemberRouter';
+import DoneRouter from './routers/DoneRouter';
 import databases from './databases';
 
 export const app = express();
@@ -53,6 +54,7 @@ app.use('/goal', GoalRouter);
 app.use('/goal', GoalGetterRouter);
 app.use('/fork', ForkRouter);
 app.use('/member', MemberRouter);
+app.use('/done', DoneRouter);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => logger.info(`backend server listening on ${port}`));
