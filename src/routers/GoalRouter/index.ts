@@ -1,13 +1,14 @@
 import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
+import Users from '../../databases/models/users';
 import checkBody from "../../middlewares/CheckBody";
 import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
-router.post('/create', checkBody, (req, res) => {
-    const {contents, level, parent} = req.body;
+router.post('/create', checkBody, async (req, res) => {
+    const {contents, level, parent, email} = req.body;
 
     const levelNumber = parseInt(level);
     if (levelNumber < 0 || levelNumber > 5) {
@@ -15,21 +16,24 @@ router.post('/create', checkBody, (req, res) => {
         return;
     }
 
-    const obj = {
-        contents,
-        level,
-        parent
-    };
+    try {
+        const userData = await Users.findOne({ email });
+        const obj = {
+            contents,
+            level,
+            parent,
+            members: [userData]
+        };
 
-    Goals.create(obj)
-        .then((data: any) => {
-            logger.info(`새로운 목표를 추가하였습니다. id: ${data._id}`);
-            res.status(200).send({success: true, code: 0, id: data._id});
-        })
-        .catch((err: Error) => {
-            logger.error(`목표 추가 중 오류가 발생하였습니다. \n${err}`);
-            res.sendStatus(500);
-        });
+        const created = await Goals.create(obj);
+
+
+        logger.info(`새로운 목표를 추가하였습니다. id: ${created._id}`);
+        res.status(200).send({success: true, code: 0, id: created._id});
+    } catch (e) {
+        logger.error(`목표 추가 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
 });
 
 router.put('/:id', (req, res) => {
