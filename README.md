@@ -310,6 +310,36 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 유저 데이터(Array) |
 
+#### `GET` /fork/children/:id
+- 자식 복제 목표를 모두 가져옵니다.
+
+#### Params
+| key | value |
+|-----|-----|
+| id | 부모 복제 목표 id |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 자식 복제 목표 데이터(Array) |
+
+#### `GET` /fork/parent/:id
+- 부모 복제 목표를 가져옵니다.
+
+#### Params
+| key | value |
+|-----|-----|
+| id | 자식 복제 목표 id |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| data | 부모 복제 데이터 |
+
 #### `GET` /member/:id
 - 초대된 유저 목록을 가져옵니다.
 

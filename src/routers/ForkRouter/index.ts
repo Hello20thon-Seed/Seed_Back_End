@@ -139,4 +139,34 @@ router.delete('/:id', checkParams, async (req, res) => {
 	}
 });
 
+router.get('/children/:id', checkParams, async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const children = await Forks.find({ parent: id });
+
+		logger.info(`${id} 부모 복제 목표의 자식 복제 목표를 모두 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: children });
+	} catch (e) {
+		logger.error(`${id} 부모 복제 목표의 자식 복제 목표를 모두 가져오는 중 오류가 발생하였습니다. \n${e}`);
+		res.sendStatus(500);
+	}
+});
+
+router.get('/parent/:id', checkParams, async (req, res) => {
+	const { id } = req.params;
+
+	try {
+		const child = await Forks.findOne({ _id: id });
+		const parentId = child!.parent;
+		const parent = await Forks.findOne({ _id: parentId });
+
+		logger.info(`${id} 자식 복제 목표의 부모 복제 목표를 가져옵니다.`);
+		res.status(200).send({ success: true, code: 0, data: parent });
+	} catch (e) {
+		logger.error(`${id} 자식 복제 목표의 부모 복제 목표를 가져오는 중 오류가 발생하였습니다.`);
+		res.sendStatus(500);
+	}
+});
+
 export default router;
