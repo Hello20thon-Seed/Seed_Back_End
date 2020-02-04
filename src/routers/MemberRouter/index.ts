@@ -1,7 +1,7 @@
 import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
-import Users, {UsersStruct} from '../../databases/models/users';
+import Users from '../../databases/models/users';
 import checkParams from "../../middlewares/CheckParams";
 import checkBody from "../../middlewares/CheckBody";
 
@@ -11,7 +11,7 @@ router.get('/:id', checkParams, async (req, res) => {
     const {id} = req.params;
 
     try {
-        const goal= await Goals.findOne({ _id: id });
+        const goal = await Goals.findOne({_id: id});
 
         logger.info(`${id} 원본 목표에 초대된 유저를 가져옵니다.`);
         res.status(200).send({success: true, code: 0, data: goal!.members});
@@ -26,18 +26,18 @@ router.put('/:id', checkParams, checkBody, async (req, res) => {
     const {email} = req.body;
 
     try {
-        const userData = await Users.findOne({ email });
-        const goal = await Goals.findOne({ _id: id });
+        const userData = await Users.findOne({email});
+        const goal = await Goals.findOne({_id: id});
         const prevMembers = goal!.members;
 
-        if(prevMembers.includes(userData!)) {
+        if (prevMembers.includes(userData!)) {
             res.status(200).send({success: false, code: 402});
             return;
         }
 
         prevMembers.push(userData!);
 
-        await Goals.updateOne({ _id: id }, { members: prevMembers });
+        await Goals.updateOne({_id: id}, {members: prevMembers});
 
         logger.info(`${id} 원본 목표에 ${email} 유저를 초대합니다.`);
         res.status(200).send({success: true, code: 0});
@@ -52,14 +52,14 @@ router.delete('/:id', checkParams, checkBody, async (req, res) => {
     const {email} = req.body;
 
     try {
-        const userData = await Users.findOne({ email });
-        const goal = await Goals.findOne({ _id: id });
+        const userData = await Users.findOne({email});
+        const goal = await Goals.findOne({_id: id});
         const prevMembers = goal!.members;
 
         const deleteIndex = prevMembers.findIndex((user) => user === userData);
         if (deleteIndex > -1) prevMembers.splice(deleteIndex, 1);
 
-        await Goals.updateOne({ _id: id }, { members: prevMembers });
+        await Goals.updateOne({_id: id}, {members: prevMembers});
 
         logger.info(`${id} 원본 목표에 ${email} 유저를 초대 해제합니다.`);
         res.status(200).send({success: true, code: 0});
