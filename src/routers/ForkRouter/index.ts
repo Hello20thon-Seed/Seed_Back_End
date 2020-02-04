@@ -14,6 +14,13 @@ router.post('/create', checkBody, async (req, res) => {
 	try {
 		const ownerData = await Users.findOne({ email: owner });
 		const originGoal = await Goals.findOne({ _id: id });
+
+		if(originGoal!.level !== 0) {
+			res.status(200).send({ success: false, code: 205 });
+			return;
+		}
+
+		const originChildren = await Goals.find({ parent: id });
 		const { contents, level, parent } = originGoal!;
 		const createData = {
 			originId: id,
