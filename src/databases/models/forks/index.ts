@@ -5,7 +5,7 @@ export interface ForksStruct extends mongoose.Document {
     readonly originId: string;
     readonly contents: string;
     readonly level: number;
-    readonly parent: string;
+    readonly parent: string | null;
     readonly isDone: boolean;
     readonly owner: UsersStruct;
 }
