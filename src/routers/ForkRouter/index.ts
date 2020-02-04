@@ -3,16 +3,13 @@ import { logger } from '../../index';
 import Forks, {ForksStruct} from '../../databases/models/forks';
 import Goals from '../../databases/models/goals';
 import Users, {UsersStruct} from '../../databases/models/users';
+import checkBody from "../../middlewares/CheckBody";
+import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
-router.post('/create', async (req, res) => {
+router.post('/create', checkBody, async (req, res) => {
 	const { id, owner } = req.body;
-
-	if (id === undefined || owner === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const ownerData = await Users.findOne({ email: owner });
@@ -42,13 +39,8 @@ router.post('/create', async (req, res) => {
 	}
 });
 
-router.get('/all/:owner', async (req, res) => {
+router.get('/all/:owner', checkParams, async (req, res) => {
 	const { owner } = req.params;
-
-	if (owner === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const userData = await Users.findOne({ email: owner });
@@ -62,13 +54,8 @@ router.get('/all/:owner', async (req, res) => {
 	}
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const forkGoal = await Forks.findOne({ _id: id });
@@ -80,13 +67,8 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
-router.get('/filter/:id/:email', async (req, res) => {
+router.get('/filter/:id/:email', checkParams, async (req, res) => {
 	const { id, email } = req.params;
-
-	if (id === undefined || email == undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
-		return;
-	}
 
 	try {
 		const userData = await Users.findOne({ email });
@@ -100,13 +82,8 @@ router.get('/filter/:id/:email', async (req, res) => {
 	}
 });
 
-router.get('/user/:id', async (req, res) => {
+router.get('/user/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const forkList = await Forks.find({ originId: id });
@@ -124,13 +101,8 @@ router.get('/user/:id', async (req, res) => {
 	}
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101, data: null });
-		return;
-	}
 
 	try {
 		await Forks.deleteOne({ _id: id });

@@ -1,6 +1,7 @@
 import express from 'express';
 import { logger } from '../../index';
 import Goals from '../../databases/models/goals';
+import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
@@ -16,13 +17,8 @@ router.get('/all', async (req, res) => {
 	}
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const goal = await Goals.findOne({ _id: id });
@@ -35,13 +31,8 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
-router.get('/children/:id', async (req, res) => {
+router.get('/children/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const children = await Goals.find({ parent: id });
@@ -54,13 +45,8 @@ router.get('/children/:id', async (req, res) => {
 	}
 });
 
-router.get('/parent/:id', async (req, res) => {
+router.get('/parent/:id', checkParams, async (req, res) => {
 	const { id } = req.params;
-
-	if (id === undefined) {
-		res.status(200).send({ success: false, code: 101 });
-		return;
-	}
 
 	try {
 		const child = await Goals.findOne({ _id: id });

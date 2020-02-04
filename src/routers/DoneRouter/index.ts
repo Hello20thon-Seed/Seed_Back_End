@@ -2,17 +2,14 @@ import express from 'express';
 import {logger} from '../../index';
 import Forks, {ForksStruct} from '../../databases/models/forks';
 import Users from '../../databases/models/users';
+import checkParams from "../../middlewares/CheckParams";
+import checkBody from "../../middlewares/CheckBody";
 
 const router = express.Router();
 
-router.put('/:forkId/:originId', async (req, res) => {
+router.put('/:forkId/:originId', checkParams, checkBody, async (req, res) => {
     const {forkId, originId} = req.params;
     const {email} = req.body;
-
-    if (forkId === undefined || originId === undefined || email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         let flag = false;
@@ -37,14 +34,9 @@ router.put('/:forkId/:originId', async (req, res) => {
     }
 });
 
-router.delete('/:forkId/:targetId', async (req, res) => {
+router.delete('/:forkId/:targetId', checkParams, checkBody, async (req, res) => {
     const {forkId, originId} = req.params;
     const {email} = req.body;
-
-    if (forkId === undefined || originId === undefined || email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         let flag = false;
@@ -69,13 +61,8 @@ router.delete('/:forkId/:targetId', async (req, res) => {
     }
 });
 
-router.get('/user/:email', async (req, res) => {
+router.get('/user/:email', checkParams, async (req, res) => {
     const {email} = req.params;
-
-    if (email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const userData = await Users.findOne({email});
@@ -89,13 +76,8 @@ router.get('/user/:email', async (req, res) => {
     }
 });
 
-router.get('/:forkId/:originId/:email', async (req, res) => {
+router.get('/:forkId/:originId/:email', checkParams, async (req, res) => {
     const {forkId, originId, email} = req.params;
-
-    if (forkId === undefined || originId === undefined || email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     let count = 0;
     let node = 0;

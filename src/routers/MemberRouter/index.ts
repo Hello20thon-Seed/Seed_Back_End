@@ -2,16 +2,13 @@ import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
 import Users, {UsersStruct} from '../../databases/models/users';
+import checkParams from "../../middlewares/CheckParams";
+import checkBody from "../../middlewares/CheckBody";
 
 const router = express.Router();
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', checkParams, async (req, res) => {
     const {id} = req.params;
-
-    if (id === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const goal= await Goals.findOne({ _id: id });
@@ -24,14 +21,9 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', checkParams, checkBody, async (req, res) => {
     const {id} = req.params;
     const {email} = req.body;
-
-    if (id === undefined || email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const userData = await Users.findOne({ email });
@@ -55,14 +47,9 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkParams, checkBody, async (req, res) => {
     const {id} = req.params;
     const {email} = req.body;
-
-    if (id === undefined || email === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const userData = await Users.findOne({ email });

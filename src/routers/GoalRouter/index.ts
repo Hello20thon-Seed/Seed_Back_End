@@ -1,16 +1,13 @@
 import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
+import checkBody from "../../middlewares/CheckBody";
+import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
-router.post('/create', (req, res) => {
+router.post('/create', checkBody, (req, res) => {
     const {contents, level, parent} = req.body;
-
-    if (contents === undefined || level === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     const levelNumber = parseInt(level);
     if (levelNumber < 0 || levelNumber > 5) {
@@ -68,13 +65,8 @@ router.put('/:id', (req, res) => {
         });
 });
 
-router.delete('/all/:id', async (req, res) => {
+router.delete('/all/:id', checkParams, async (req, res) => {
     const {id} = req.params;
-
-    if (id === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const children = await Goals.find({parent: id});
@@ -92,13 +84,8 @@ router.delete('/all/:id', async (req, res) => {
     }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', checkParams, async (req, res) => {
     const {id} = req.params;
-
-    if (id === undefined) {
-        res.status(200).send({success: false, code: 101});
-        return;
-    }
 
     try {
         const children = await Goals.find({parent: id});
