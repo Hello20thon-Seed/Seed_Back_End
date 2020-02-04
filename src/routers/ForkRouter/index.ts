@@ -8,39 +8,43 @@ import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
-const pushForkGoaltoUser = async (forkGoal: ForksStruct, owner: string, ownerData: UsersStruct) => {
-    const prevUserGoal: Array<ForksStruct> = ownerData!.goal;
-    prevUserGoal.push(forkGoal);
-    await Users.updateOne({email: owner}, {goal: prevUserGoal});
+const pushForkGoaltoUser = async (forkGoal: ForksStruct, owner: string) => {
+    try {
+        const ownerData = await Users.findOne({email: owner});
+        const prevUserGoal: Array<ForksStruct> = ownerData!.goal;
+        prevUserGoal.push(forkGoal);
+        await Users.updateOne({email: owner}, {goal: prevUserGoal});
+    } catch (e) {
+        logger.error(`복제된 목표를 유저 정보에 추가하는 중 오류가 발생하였습니다. \n${e}`);
+    }
 };
 
 const addMembertoOriginGoal = async (id: string, userData: UsersStruct) => {
-    const goalData = await Goals.findOne({_id: id});
-    const prevMembers: Array<UsersStruct> = goalData!.members;
-    prevMembers.push(userData);
+    try {
+        const goalData = await Goals.findOne({_id: id});
+        const prevMembers: Array<UsersStruct> = goalData!.members;
+        prevMembers.push(userData);
 
-    await Goals.updateOne({_id: id}, {members: prevMembers});
+        await Goals.updateOne({_id: id}, {members: prevMembers});
+    } catch (e) {
+        logger.error(`원본 목표에 멤버 추가 중 오류가 발생하였습니다. \n${e}`);
+    }
 };
 
 router.post('/create', checkBody, async (req, res) => {
     const {id, owner} = req.body;
 
-    if (!req.isAuthenticated()) {
-        res.sendStatus(401);
-        return;
-    }
-
     try {
         const ownerData = await Users.findOne({email: owner});
         const originGoal = await Goals.findOne({_id: id});
         const originChildren = await Goals.find({parent: id});
+        const {contents, level} = originGoal!;
 
-        if (originGoal!.level !== 0) {
+        if (level !== 0) {
             res.status(200).send({success: false, code: 205});
             return;
         }
 
-        const {contents, level} = originGoal!;
         const createRootData = {
             originId: id,
             contents,
@@ -51,7 +55,7 @@ router.post('/create', checkBody, async (req, res) => {
         };
 
         const forkGoal = await Forks.create(createRootData);
-        await pushForkGoaltoUser(forkGoal, owner, ownerData!); // 유저 데이터에 포크 정보 넣는건 대주제만 넣음
+        await pushForkGoaltoUser(forkGoal, owner); // 유저 데이터에 포크 정보 넣는건 대주제만 넣음
         await addMembertoOriginGoal(id, ownerData!);
 
         let prevForkGoalId = forkGoal._id;
