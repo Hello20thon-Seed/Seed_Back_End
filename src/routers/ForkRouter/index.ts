@@ -66,7 +66,7 @@ router.post('/create', checkBody, async (req, res) => {
                 level: originChild.level,
                 parent: prevForkGoalId,
                 isDone: false,
-                ownerData: ownerData!
+                owner: ownerData!
             };
 
             const childForkGoal = await Forks.create(createChildData);
