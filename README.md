@@ -239,6 +239,26 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | id | 복제 목표의 id |
 
+#### `POST` /fork/add
+- 복제 목표를 추가합니다.
+
+#### Body
+| key | value |
+|-----|-----|
+| originId | 원본 목표 id |
+| contents | 내용 |
+| level | 레벨(0~4) |
+| parent | 부모 복제 목표 (선택) |
+| isDone | 완료 여부 (true, false) |
+| owner | 복제 목표 주인 이메일 |
+
+#### Response
+| key | value |
+|-----|-----|
+| success | 성공 여부(Boolean) |
+| code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
+| id | 복제 목표의 id |
+
 #### `GET` /fork/all/:owner
 - 해당 유저의 모든 복제 목표를 가져옵니다.
 
@@ -343,6 +363,9 @@
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 부모 복제 데이터 |
+
+### Member
+- 목표 공유를 관리하는 API
 
 #### `GET` /member/:id
 - 초대된 유저 목록을 가져옵니다.
