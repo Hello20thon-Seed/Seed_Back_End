@@ -11,6 +11,7 @@ import AuthRouter from './routers/AuthRouter';
 import GoalRouter from './routers/GoalRouter';
 import GoalGetterRouter from './routers/GoalGetterRouter';
 import ForkRouter from './routers/ForkRouter';
+import ForkGetterRouter from './routers/ForkGetterRouter';
 import MemberRouter from './routers/MemberRouter';
 import DoneRouter from './routers/DoneRouter';
 import databases from './databases';
@@ -53,6 +54,7 @@ app.use('/auth', AuthRouter);
 app.use('/goal', GoalRouter);
 app.use('/goal', GoalGetterRouter);
 app.use('/fork', ForkRouter);
+app.use('/fork', ForkGetterRouter);
 app.use('/member', MemberRouter);
 app.use('/done', DoneRouter);
 
