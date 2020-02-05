@@ -106,7 +106,7 @@ router.post('/add', async (req, res) => {
     }
 
     try {
-        const userData = await Users.findOne({ email: owner });
+        const userData = await Users.findOne({email: owner});
 
         const obj = {
             originId,
@@ -125,6 +125,40 @@ router.post('/add', async (req, res) => {
         logger.error(`복제 목표 추가 중 오류가 발생하였습니다. \n${e}`);
         res.sendStatus(500);
     }
+});
+
+router.put('/:id', (req, res) => {
+    const {id} = req.params;
+    const {contents, level, parent, owner} = req.body;
+
+    if (id === undefined || contents === undefined || level === undefined) {
+        res.status(200).send({success: false, code: 101});
+        return;
+    }
+
+    const levelNumber = parseInt(level);
+    if (levelNumber < 0 || levelNumber > 5) {
+        res.status(200).send({success: false, code: 203, id: null});
+        return;
+    }
+
+    const obj: any = {
+        contents,
+        level
+    };
+
+    if (parent !== undefined) obj['parent'] = parent;
+    if (owner !== undefined) obj['owner'] = owner;
+
+    Forks.updateOne({_id: id}, obj)
+        .then(() => {
+            logger.info(`${id} 복제 목표를 수정하였습니다.`);
+            res.status(200).send({success: true, code: 0});
+        })
+        .catch((err: Error) => {
+            logger.error(`${id} 복제 목표 수정 중 오류가 발생하였습니다.\n${err}`);
+            res.sendStatus(500);
+        });
 });
 
 router.get('/all/:owner', checkParams, async (req, res) => {
