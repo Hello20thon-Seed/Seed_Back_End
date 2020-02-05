@@ -4,7 +4,7 @@ import {logger} from '../../index';
 
 const router = express.Router();
 
-const frotendDomain = process.env.DOMAIN || 'https://seedd.run.goorm.io/hello2020/frontend/';
+const frotendDomain = process.env.DOMAIN || 'https://seedd.run.goorm.io/hello2020/frontend_git/Seed_Front_End';
 
 router.get('/google', passport.authenticate('google', {scope: ['email', 'profile']}));
 router.get(
