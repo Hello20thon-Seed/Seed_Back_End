@@ -75,7 +75,7 @@ router.post('/create', checkBody, async (req, res) => {
             const childForkGoal = await Forks.create(createChildData);
             await addMembertoOriginGoal(originChild._id, ownerData!);
 
-            if((originChildren[i + 1] !== undefined) && (originChildren[i + 1].level === originChild.level)) {
+            if((originChildren[i + 1] !== undefined) && (originChildren[i + 1].level !== originChild.level)) {
                 prevForkGoalId = childForkGoal._id;
             }
         }
