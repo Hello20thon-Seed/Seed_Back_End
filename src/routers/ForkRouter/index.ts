@@ -84,6 +84,49 @@ router.post('/create', checkBody, async (req, res) => {
     }
 });
 
+router.post('/add', async (req, res) => {
+    const {
+        originId,
+        contents,
+        level,
+        parent,
+        isDone,
+        owner
+    } = req.body;
+
+    if (originId === undefined || contents === undefined || level === undefined || isDone === undefined || owner === undefined) {
+        res.status(200).send({success: false, code: 101, id: null});
+        return;
+    }
+
+    const levelNumber = parseInt(level);
+    if (levelNumber < 0 || levelNumber > 5) {
+        res.status(200).send({success: false, code: 203});
+        return;
+    }
+
+    try {
+        const userData = await Users.findOne({ email: owner });
+
+        const obj = {
+            originId,
+            contents,
+            level,
+            parent,
+            isDone,
+            userData
+        };
+
+        const created = await Forks.create(obj);
+
+        logger.info(`새로운 복제 목표를 추가하였습니다. id: ${created._id}`);
+        res.status(200).send({success: true, code: 0, id: created._id});
+    } catch (e) {
+        logger.error(`복제 목표 추가 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
+});
+
 router.get('/all/:owner', checkParams, async (req, res) => {
     const {owner} = req.params;
 

@@ -1,13 +1,17 @@
 import express from 'express';
 import {logger} from '../../index';
 import Goals from '../../databases/models/goals';
-import checkBody from "../../middlewares/CheckBody";
 import checkParams from "../../middlewares/CheckParams";
 
 const router = express.Router();
 
-router.post('/create', checkBody, async (req, res) => {
+router.post('/create', async (req, res) => {
     const {contents, level, parent} = req.body;
+
+    if (contents === undefined || level === undefined) {
+        res.status(200).send({success: false, code: 101, id: null});
+        return;
+    }
 
     const levelNumber = parseInt(level);
     if (levelNumber < 0 || levelNumber > 5) {
