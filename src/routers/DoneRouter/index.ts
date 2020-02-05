@@ -7,15 +7,15 @@ import checkBody from "../../middlewares/CheckBody";
 
 const router = express.Router();
 
-router.put('/:forkId/:originId', checkParams, checkBody, async (req, res) => {
-    const {forkId, originId} = req.params;
+router.put('/:forkId', checkParams, checkBody, async (req, res) => {
+    const {forkId} = req.params;
     const {email} = req.body;
 
     try {
         let flag = false;
-        const children = await Forks.find({parent: originId});
+        const children = await Forks.find({parent: forkId});
         children.forEach((child: ForksStruct) => {
-            if (!child.isDone) {
+            if (!flag && !child.isDone) {
                 flag = true;
                 res.status(200).send({success: false, code: 502});
                 return;
@@ -34,15 +34,15 @@ router.put('/:forkId/:originId', checkParams, checkBody, async (req, res) => {
     }
 });
 
-router.delete('/:forkId/:targetId', checkParams, checkBody, async (req, res) => {
-    const {forkId, originId} = req.params;
+router.delete('/:forkId', checkParams, checkBody, async (req, res) => {
+    const {forkId} = req.params;
     const {email} = req.body;
 
     try {
         let flag = false;
-        const children = await Forks.find({parent: originId});
+        const children = await Forks.find({parent: forkId});
         children.forEach((child: ForksStruct) => {
-            if (child.isDone) {
+            if (!flag && child.isDone) {
                 flag = true;
                 res.status(200).send({success: false, code: 503});
                 return;
@@ -76,20 +76,20 @@ router.get('/user/:email', checkParams, async (req, res) => {
     }
 });
 
-router.get('/:forkId/:originId/:email', checkParams, async (req, res) => {
-    const {forkId, originId, email} = req.params;
+router.get('/:forkId/:email', checkParams, async (req, res) => {
+    const {forkId, email} = req.params;
 
     let count = 0;
     let node = 0;
 
     try {
-        const rootGoal = await Forks.findOne({_id: forkId, originId});
+        const rootGoal = await Forks.findOne({_id: forkId});
         const isRootGoalDone = rootGoal!.isDone;
 
         node++;
         if (isRootGoalDone) count++;
 
-        const rootChildren = await Forks.find({parent: originId});
+        const rootChildren = await Forks.find({parent: forkId});
         rootChildren.forEach((child: ForksStruct) => {
             node++;
             if (child.isDone) count++;
@@ -98,10 +98,10 @@ router.get('/:forkId/:originId/:email', checkParams, async (req, res) => {
         let data = (count / node);
         if (count === 0 && node === 0) data = 0;
 
-        logger.info(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져옵니다.`);
+        logger.info(`${email}이 ${forkId} 복제 목표에서부터 자식까지 달성한 수치를 가져옵니다.`);
         res.status(200).send({success: true, code: 0, data});
     } catch (e) {
-        logger.error(`${email}이 ${forkId} 복제 목표에서 달성한 수치를 ${originId} 원본 목표 기준으로 가져오는 중 오류가 발생하였습니다. \n${e}`);
+        logger.error(`${email}이 ${forkId} 복제 목표에서부터 자식까지 달성한 수치를 가져오는 중 오류가 발생하였습니다. \n${e}`);
         res.sendStatus(500);
     }
 });

@@ -445,7 +445,7 @@
 ### Done
 - 복제 목표를 달성하는 API
 
-#### `PUT` /done/:forkId/:originId
+#### `PUT` /done/:forkId
 - 복제 목표를 달성합니다.
 - 자식 노드가 달성되있지 않으면 오류를 반환합니다.
 
@@ -453,7 +453,6 @@
 | key | value |
 |-----|-----|
 | forkId | 복제 목표 id |
-| originId | 원본 목표 id (자식 목표 달성 검사하기 위해 필요) |
 
 #### Body
 | key | value |
@@ -466,7 +465,7 @@
 | success | 성공 여부(Boolean) |
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 
-#### `DELETE` /done/:forkId/:targetId
+#### `DELETE` /done/:forkId
 - 복제 목표를 달성 해제합니다.
 
 #### Params
@@ -500,14 +499,13 @@
 | code | 오류 코드(아래참고, 오류가 없으면 0을 반환합니다.) |
 | data | 복제 목표 데이터 (Array) |
 
-#### `GET` /done/:forkId/:originId/:email
+#### `GET` /done/:forkId/:email
 - originId 원본 목표부터 자식까지 달성한 정보를 가져옵니다.
 
 #### Params
 | key | value |
 |-----|-----|
 | forkId | 복제 목표 id  |
-| originId | 원본 목표 id  |
 | email | 유저 이메일 |
 
 #### Response
