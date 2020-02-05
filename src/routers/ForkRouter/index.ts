@@ -59,7 +59,10 @@ router.post('/create', checkBody, async (req, res) => {
         await addMembertoOriginGoal(id, ownerData!);
 
         let prevForkGoalId = forkGoal._id;
-        for (const originChild of originChildren) {
+
+        for(let i = 0; i < originChildren.length; i++) {
+            const originChild = originChildren[i];
+
             const createChildData = {
                 originId: originChild._id,
                 contents: originChild.contents,
@@ -72,9 +75,10 @@ router.post('/create', checkBody, async (req, res) => {
             const childForkGoal = await Forks.create(createChildData);
             await addMembertoOriginGoal(originChild._id, ownerData!);
 
-            prevForkGoalId = childForkGoal._id;
+            if((originChildren[i + 1] !== undefined) && (originChildren[i + 1].level === originChild.level)) {
+                prevForkGoalId = childForkGoal._id;
+            }
         }
-
 
         logger.info(`${owner}를 주인으로 ${id} 원본 목표를 복제하였습니다.`);
         res.status(200).send({success: true, code: 0, id: forkGoal._id});
