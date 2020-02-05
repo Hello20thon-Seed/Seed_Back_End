@@ -15,7 +15,7 @@ router.put('/:forkId', checkParams, checkBody, async (req, res) => {
         let flag = false;
         const children = await Forks.find({parent: forkId});
         children.forEach((child: ForksStruct) => {
-            if (!flag && !child.isDone) {
+            if (!flag && child) {
                 flag = true;
                 res.status(200).send({success: false, code: 502});
                 return;
@@ -42,7 +42,7 @@ router.delete('/:forkId', checkParams, checkBody, async (req, res) => {
         let flag = false;
         const children = await Forks.find({parent: forkId});
         children.forEach((child: ForksStruct) => {
-            if (!flag && child.isDone) {
+            if (!flag && child) {
                 flag = true;
                 res.status(200).send({success: false, code: 503});
                 return;
@@ -83,12 +83,6 @@ router.get('/:forkId/:email', checkParams, async (req, res) => {
     let node = 0;
 
     try {
-        const rootGoal = await Forks.findOne({_id: forkId});
-        const isRootGoalDone = rootGoal!.isDone;
-
-        node++;
-        if (isRootGoalDone) count++;
-
         const rootChildren = await Forks.find({parent: forkId});
         rootChildren.forEach((child: ForksStruct) => {
             node++;
