@@ -161,15 +161,42 @@ router.put('/:id', (req, res) => {
         });
 });
 
+router.delete('/all/:id', checkParams, async (req, res) => {
+    const {id} = req.params;
+
+    try {
+        const children = await Forks.find({parent: id});
+
+        for (const child of children) {
+            await Forks.deleteOne({_id: child});
+        }
+        await Forks.deleteOne({_id: id});
+
+        logger.info(`${id}와 그 자식 복제 목표를 모두 삭제하였습니다.`);
+        res.status(200).send({success: true, code: 0});
+    } catch (e) {
+        logger.error(`${id}와 그 자식 복제 목표를 삭제 중 오류가 발생하였습니다. \n${e}`);
+        res.sendStatus(500);
+    }
+});
+
 router.delete('/:id', checkParams, async (req, res) => {
     const {id} = req.params;
 
     try {
+        const children = await Forks.find({parent: id});
+
+        if (children.length > 0) {
+            res.status(200).send({success: true, code: 204});
+            return;
+        }
+
         await Forks.deleteOne({_id: id});
+
         logger.info(`${id} 복제 목표를 삭제하였습니다.`);
         res.status(200).send({success: true, code: 0});
     } catch (e) {
-        logger.error(`${id} 복제 목표를 삭제 중 오류가 발생하였습니다. \n${e}`);
+        logger.error(`${id} 복제 목표를 삭제하는 중 오류가 발생하였습니다. \n${e}`);
         res.sendStatus(500);
     }
 });
